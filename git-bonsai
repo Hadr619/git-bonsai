@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 const chalk = require('chalk')
 const args = process.argv
-var Git = require("nodegit")
 const simplegit = require('simple-git')
 let Promise = require('promise')
 let path = require("path")
@@ -52,53 +51,25 @@ switch(args[2]) {
 }
 
 function checkBranch(){
-	console.log(__dirname )
-Git.Repository.open('/mnt/c/devel/wasp').then(function(repo) {
-  /* Get the current branch. */
-  return repo.getCurrentBranch().then(function(ref) {
-    console.log("On " + ref.shorthand() + " (" + ref.target() + ")");
-
-    /* Get the commit that the branch points at. */
-    return repo.getBranchCommit(ref.shorthand());
-  }).then(function (commit) {
-    /* Set up the event emitter and a promise to resolve when it finishes up. */
-    var hist = commit.history(),
-        p = new Promise(function(resolve, reject) {
-            hist.on("end", resolve);
-            hist.on("error", reject);
-        });
-    hist.start();
-    return p;
-  }).then(function (commits) {
-
-    /* Iterate through the last 10 commits of the history. */
-    for (var i = 0; i < 10; i++) {
-      var sha = commits[i].sha().substr(0,7),
-          msg = commits[i].message().split('\n')[0];
-      console.log(sha + " " + msg);
-    }
-  });
-}).catch(function (err) {
-  console.log(err);
-}).done(function () {
-  console.log('Finished');
+require('simple-git')('/mnt/c/workspace/merging')
+.branchLocal()
+.revparse(['--abbrev-ref','HEAD'] , (err, data) => {
+	if(!err){
+		console.log(data);		
+	}
 });
 }
 
 function checkFlags(){
 	console.log('TACO')
 
-require('simple-git')('/mnt/c/devel/cms')
-	.checkout('master')
-	
-    .branch('--merged', (err, data) => {
+require('simple-git')('/mnt/c/workspace/merging')
+	.checkout('master')	
+    .branch(['--merged', 'master'], (err, data) => {
         if (!err) {
-       		console.log(data.all.length);
-            //console.log(data.all);
             for(var i=0; i < data.all.length; i++){
             	console.log(data.all[i]);
             }
         }
     });
-
 }
