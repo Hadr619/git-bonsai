@@ -4,7 +4,8 @@ const args = process.argv
 const simplegit = require('simple-git')
 let Promise = require('promise')
 let path = require("path")
-const commands = ['pruneAll', 'prune', 'help']
+const commands = ['pruneAll', 'prune', 'list','help']
+let directory = require('simple-git')('/mnt/c/workspace/merging')
 
 const usage = function() {
   const usageText = `
@@ -25,7 +26,7 @@ function errorLog(error) {
 }
 
 // we make sure the length of the arguments is exactly three
-if (args.length > 3) {
+if (args.length > 4) {
   errorLog(`only one argument can be accepted`)
   usage()
 }
@@ -42,6 +43,9 @@ switch(args[2]) {
   case 'prune':
   checkBranch()
     break
+  case 'list':
+  branchList()
+    break
   case 'help':
     usage()
     break
@@ -51,20 +55,25 @@ switch(args[2]) {
 }
 
 function checkBranch(){
-require('simple-git')('/mnt/c/workspace/merging')
+	let current = "";
+directory
 .branchLocal()
 .revparse(['--abbrev-ref','HEAD'] , (err, data) => {
 	if(!err){
-		console.log(data);		
+		console.log(data);
+		current = data;	
+		console.log(current)	;
 	}
 });
+
 }
 
-function checkFlags(){
-	console.log('TACO')
+	
 
-require('simple-git')('/mnt/c/workspace/merging')
-	.checkout('master')	
+
+function branchList(){
+
+directory
     .branch(['--merged', 'master'], (err, data) => {
         if (!err) {
             for(var i=0; i < data.all.length; i++){
