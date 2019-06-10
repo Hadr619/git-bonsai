@@ -4,8 +4,10 @@ const args = process.argv
 const simplegit = require('simple-git')
 let Promise = require('promise')
 let path = require("path")
-const commands = ['pruneAll', 'prune', 'list','help']
+const rl = require('readline')
+const commands = ['pruneall', 'prune', 'list','help']
 let directory = require('simple-git')('/mnt/c/workspace/merging')
+let branches = [];
 
 const usage = function() {
   const usageText = `
@@ -16,32 +18,36 @@ const usage = function() {
 
     commands can be:
   `
-
   console.log(usageText)
 }
+
 // used to log errors to the console in red color
 function errorLog(error) {
   const eLog = chalk.red(error)
   console.log(eLog)
 }
 
-// we make sure the length of the arguments is exactly three
+// we make sure the length of the arguments is exactly four
 if (args.length > 4) {
   errorLog(`only one argument can be accepted`)
   usage()
 }
 
+// if we dont have any args 
 if (commands.indexOf(args[2]) == -1) {
   errorLog('invalid command passed')
   usage()
 }
 
+
+
 switch(args[2]) {
-  case 'pruneAll':
-  checkFlags()
+  case 'pruneall':
+  checkBranch()
     break
   case 'prune':
-  checkBranch()
+
+  prune()
     break
   case 'list':
   branchList()
@@ -54,31 +60,60 @@ switch(args[2]) {
     errorLog('invalid command passed')
 }
 
+//checks what current branch the dir/ is on
 function checkBranch(){
-	let current = "";
+let current = "";
 directory
-.branchLocal()
-.revparse(['--abbrev-ref','HEAD'] , (err, data) => {
-	if(!err){
-		console.log(data);
-		current = data;	
-		console.log(current)	;
-	}
-});
+	.branchLocal()
+	.revparse(['--abbrev-ref','HEAD'] , (err, data) => {
+		if(!err){
+
+			current = data;	
+			console.log(current)	;
+		}
+	});
 
 }
 
-	
+// sets up a prompt in terminal
+function prompt(question) {
+  const r = rl.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+  });
+  return new Promise((resolve, error) => {
+    r.question(question, answer => {
+      r.close()
+      resolve(answer)
+    });
+  })
+}
 
+//init function for pruning branches
+function prune(){
 
+	const q = chalk.blue('Choose branch to prune\n')
+	prompt(q).then(pruneOption =>{
+		console.log(pruneOption);
+
+	})
+
+}
+
+// Lists out all branches currently merged to master
 function branchList(){
-
 directory
     .branch(['--merged', 'master'], (err, data) => {
         if (!err) {
+
+        	data.all.pop();
+
             for(var i=0; i < data.all.length; i++){
-            	console.log(data.all[i]);
+            		console.log([i] + ' ' + data.all[i]);
+            		// branches.push(data.all[i]);
             }
+
         }
     });
 }
